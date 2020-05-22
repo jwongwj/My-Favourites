@@ -1,17 +1,17 @@
 <template>
   <div>
-    <Favourites />
+    <!-- <Favourites /> -->
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import Favourites from '@/components/Favourites.vue';
+// import Favourites from '@/components/Favourites.vue';
 
 export default {
   name: 'Home',
   components: {
-    Favourites,
+    // Favourites,
 
   },
 };

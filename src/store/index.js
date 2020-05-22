@@ -5,12 +5,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    AddNew: 'Add New',
-    Edit: 'Edit',
-    DeleteAll: 'Delete All',
-    DeleteRow: 'Delete Row',
-    DeleteSelected: 'Delete Selected',
-    Save: 'Save',
+    showDialog: false,
   },
   mutations: {},
   actions: {},
