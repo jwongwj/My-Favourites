@@ -3,12 +3,15 @@
     absolute
     color="white"
     elevate-on-scroll
-    scroll-target="#scrolling-techniques-3"
+    scroll-target="#scrolling-techniques-7"
   >
     <v-toolbar-title>Favourites</v-toolbar-title>
 
     <v-spacer></v-spacer>
-    <MenuButton :actionItem="menuAction" />
+    <MenuButton
+      :menuAction="menuAction"
+      :eventBus="$eventHub"
+    />
 
   </v-app-bar>
 
@@ -16,8 +19,8 @@
 
 <script>
 import MenuButton from '@/components/MenuButton.vue';
-import ActionConstants from '@/constants/ActionConstants';
-
+import StringConstants from '../constants/StringConstants';
+import EventConstants from '../constants/EventConstants';
 
 export default {
   name: 'Navbar',
@@ -26,8 +29,18 @@ export default {
   },
   data () {
     return {
-      value: false,
-      menuAction: ActionConstants.MENU_ACTION,
+      menuAction: [
+        {
+          buttonName: StringConstants.ADD_NEW_FAVE,
+          event: EventConstants.ADD_FAVE_EVENT,
+          icon: 'mdi-heart',
+        },
+        {
+          buttonName: StringConstants.DEL_ALL,
+          event: EventConstants.DEL_ALL_EVENT,
+          icon: 'mdi-delete-variant',
+        },
+      ],
     };
   },
 };

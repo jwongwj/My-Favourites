@@ -1,15 +1,13 @@
 <template>
   <v-sheet
     id="scrolling-techniques-7"
-    class="overflow-y-auto"
-    max-height="100vh"
+    max-height="90vh"
   >
     <v-container @contextmenu.prevent="">
-      <template style="display: none;">
+      <template>
         <v-row justify="center">
           <v-dialog
             v-model="showDialog"
-            persistent
             max-width="600px"
           >
             <v-card>
@@ -18,44 +16,52 @@
               </v-card-title>
               <v-card-text>
                 <v-container>
-                  <v-row>
-                    <v-col
-                      cols="2"
-                      sm="4"
-                      md="2"
-                    >
-                      <img
-                        :src="setFavImg"
-                        class="icon"
-                      />
-                    </v-col>
-                    <v-col
-                      cols="10"
-                      sm="8"
-                      md="10"
-                    >
-                      <v-text-field
-                        label="Url"
-                        required
-                        v-model="item.url"
-                        :v-value="item.url"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        label="Name"
-                        v-model="item.name"
-                        :v-value="item.name"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        label="Description"
-                        v-model="item.description"
-                        :v-value="item.description"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
+                  <v-form
+                    ref="listForm"
+                    v-model="valid"
+                  >
+                    <v-row>
+                      <v-col
+                        cols="2"
+                        sm="4"
+                        md="2"
+                      >
+                        <img
+                          :src="getImage(item.url)"
+                          class="icon"
+                        />
+                      </v-col>
+                      <v-col
+                        cols="10"
+                        sm="8"
+                        md="10"
+                      >
+                        <v-text-field
+                          label="Url *"
+                          v-model="item.url"
+                          :v-value="item.url"
+                          placeholder="https://www."
+                          :rules="urlRule"
+                          required
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12">
+                        <v-text-field
+                          label="Name"
+                          v-model="item.name"
+                          :v-value="item.name"
+                        ></v-text-field>
+                      </v-col>
+                      <v-col cols="12">
+                        <v-text-field
+                          label="Description"
+                          v-model="item.description"
+                          :v-value="item.description"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </v-form>
+                  <small>* Required Fields</small>
                 </v-container>
               </v-card-text>
               <v-card-actions>
@@ -63,7 +69,7 @@
                 <v-btn
                   color="red darken-1"
                   text
-                  @click="close(true)"
+                  @click="close()"
                 >Close</v-btn>
                 <v-btn
                   color="blue darken-1"
@@ -75,19 +81,23 @@
           </v-dialog>
         </v-row>
       </template>
-      <v-row style="padding-top: 8vh;">
+      <v-row style="padding-top: 5%;">
         <v-card
-          class="mx-auto"
           max-width="800"
           width="60vw"
           height="89vh"
           tile
+          class="mx-auto overflow-y-auto listClass"
         >
-          <v-toolbar flat>
+          <v-toolbar
+            flat
+            v-if="!checkItems()"
+          >
             <v-text-field
               label="Search"
               append-icon="mdi-magnify"
               v-model="search"
+              style="padding-top: 5vh;"
             ></v-text-field>
           </v-toolbar>
           <v-list
@@ -125,8 +135,10 @@
                   </v-list-item-content>
                   <v-list-item-action>
                     <MenuButton
-                      :actionItem="menuAction"
-                      :actionItemObj="itemList"
+                      :menuAction="menuAction"
+                      :actionItem="itemList"
+                      :menuOption="menuOption"
+                      :eventBus="$eventHub"
                     />
                   </v-list-item-action>
 
@@ -142,155 +154,59 @@
 </template>
 
 <script>
-import closeMixin from '@/mixins/close';
-import store from '@/store/index';
+import GlobalMixins from '@/mixins/GlobalMixins';
 import EventConstants from '@/constants/EventConstants';
 import MenuButton from '@/components/MenuButton.vue';
-import ActionConstants from '@/constants/ActionConstants';
 import ListModel from '@/model/ListModel';
+import StringConstants from '../constants/StringConstants';
 // import draggable from 'vuedraggable';
 
 const { localStorage } = window;
-
-const { state } = store;
+const storageKey = StringConstants.STORAGE_ITEMS_KEY;
 
 export default {
   name: 'formDiv',
-  mixins: [closeMixin],
+  mixins: [GlobalMixins],
   components: {
     MenuButton,
     // draggable,
   },
   data () {
     return {
-      value: false,
-      menuAction: ActionConstants.LIST_ACTION,
       item: new ListModel(),
       items: [],
-      onEdit: false,
+      menuAction: [
+        {
+          buttonName: StringConstants.EDIT,
+          event: EventConstants.EDIT_FAVE_EVENT,
+          icon: 'mdi-pencil',
+        },
+        {
+          buttonName: StringConstants.DELETE,
+          event: EventConstants.DEL_FAVE_EVENT,
+          icon: 'mdi-delete-variant',
+        },
+        {
+          buttonName: StringConstants.OPEN_URL,
+          event: EventConstants.OPEN_URL_EVENT,
+          icon: 'mdi-arrow-top-left-bold-outline',
+        },
+      ],
       oldItem: new ListModel(),
-      search: '',
-      activeNames: '',
+      onEdit: false,
+      menuOption: {
+        color: 'grey',
+      },
+      revert: false,
+      search: StringConstants.STRING_EMPTY,
+      showDialog: false,
+      urlRule: [
+        (v) => (v !== undefined) || StringConstants.BLANK_VALIDATION('URL'),
+        (v) => (v !== StringConstants.STRING_EMPTY) || StringConstants.BLANK_VALIDATION('URL'),
+      ],
+      valid: false,
+      value: false,
     };
-  },
-  methods: {
-    checkItems () {
-      if (this.items === '') {
-        return true;
-      }
-      return this.items.length === 0;
-    },
-    delAll () {
-      localStorage.clear();
-      this.items = [];
-    },
-    addFave () {
-      state.showDialog = true;
-    },
-    navigateURL (item) {
-      window.open(item.url);
-    },
-    close (revert) {
-      if (revert) {
-        this.items = this.replaceArray(this.item, this.oldItem, this.items);
-      }
-      this.item = new ListModel();
-      this.oldItem = new ListModel();
-      state.showDialog = false;
-      this.onEdit = false;
-    },
-    save () {
-      this.item.url = this.decodeUrl(this.item.url);
-
-      if (this.onEdit === false) {
-        this.items.push(this.item);
-      } else {
-        const index = this.items.indexOf(this.oldItem);
-        if (index > -1) {
-          // My issue here
-          this.$set(this.items, index, this.item);
-        }
-      }
-      localStorage.setItem('faveItems', JSON.stringify(this.items));
-      this.close(false);
-    },
-    getImage (url) {
-      return `https://s2.googleusercontent.com/s2/favicons?domain=${url}`;
-    },
-    editFave (item) {
-      this.oldItem = item;
-      this.item = { ...item };
-      state.showDialog = true;
-      this.onEdit = true;
-    },
-    delFave (item) {
-      const index = this.items.indexOf(item);
-      if (index > -1) {
-        this.items.splice(index, 1);
-      }
-      localStorage.setItem('faveItems', JSON.stringify(this.items));
-    },
-    decodeUrl (url) {
-      if (url === '') {
-        return 'www';
-      }
-
-      let newUrl = window.decodeURIComponent(url);
-      newUrl = newUrl.trim().replace(/\s/g, '');
-
-      if (/^(:\/\/)/.test(newUrl)) {
-        return `https${newUrl}`;
-      }
-      if (!/^(f|ht)tps?:\/\//i.test(newUrl)) {
-        return `https://${newUrl}`;
-      }
-      return url;
-    },
-    replaceArray (oldItem, newItem, array) {
-      const index = this.items.indexOf(oldItem);
-      if (index > -1) {
-        array[index] = newItem;
-      }
-      return array;
-    },
-    keyUpEvents (evt) {
-      if (evt.keyCode === EventConstants.KEYBOARD_ESCAPE) {
-        this.close(true);
-      }
-
-      if (evt.keyCode === EventConstants.KEYBOARD_ENTER && state.showDialog) {
-        this.save();
-      }
-    },
-  },
-  computed: {
-    setFavImg () {
-      if (this.item.url === '') {
-        return '';
-      }
-      return (
-        `https://s2.googleusercontent.com/s2/favicons?domain=${this.item.url}`
-      );
-    },
-    filteredList () {
-      const { search } = this;
-      return this.items.filter((i) => {
-        if (i == null) {
-          return;
-        }
-        return (
-          (i.url != null
-            && i.url.toLowerCase().includes(search.toLowerCase()))
-          || (i.name != null
-            && i.name.toLowerCase().includes(search.toLowerCase()))
-          || (i.description != null
-            && i.description.toLowerCase().includes(search.toLowerCase()))
-        );
-      });
-    },
-    showDialog () {
-      return state.showDialog;
-    },
   },
   created () {
     // Register Events
@@ -299,19 +215,117 @@ export default {
     this.$eventHub.$on(EventConstants.OPEN_URL_EVENT, this.navigateURL);
     this.$eventHub.$on(EventConstants.ADD_FAVE_EVENT, this.addFave);
     this.$eventHub.$on(EventConstants.DEL_ALL_EVENT, this.delAll);
-
-    document.addEventListener(EventConstants.KEYUP_EVENT, (evt) => {
-      this.keyUpEvents(evt);
-    });
     // End Register Events
 
-    if (
-      localStorage.getItem('faveItems') !== null
-      && localStorage.getItem('faveItems') !== 'undefined'
-      && localStorage.getItem('faveItems') !== ''
-    ) {
-      this.items = JSON.parse(localStorage.getItem('faveItems'));
+    if (localStorage.getItem(storageKey) !== null) {
+      this.items = JSON.parse(localStorage.getItem(storageKey));
     }
+  },
+  methods: {
+    addFave () {
+      this.showDialog = true;
+      if (this.$refs.listForm) {
+        this.$refs.listForm.reset();
+      }
+    },
+    checkItems () {
+      if (this.items === StringConstants.STRING_EMPTY) {
+        return true;
+      }
+      return this.items.length === 0;
+    },
+    close () {
+      this.item = new ListModel();
+      this.showDialog = false;
+      this.onEdit = false;
+    },
+    decodeUrl (url) {
+      if (url === StringConstants.STRING_EMPTY || url === undefined) {
+        return `${StringConstants.WEB_HTTPS_PREFIX}${StringConstants.WEB_WWW}`;
+      }
+
+      let newUrl = window.decodeURIComponent(url);
+      newUrl = newUrl.trim().replace(/\s/g, StringConstants.STRING_EMPTY);
+
+      if (/^(:\/\/)/.test(newUrl)) {
+        return `${StringConstants.WEB_HTTPS}${newUrl}`;
+      }
+      if (!/^(f|ht)tps?:\/\//i.test(newUrl)) {
+        return `${StringConstants.WEB_HTTPS_PREFIX}${newUrl}`;
+      }
+      return url;
+    },
+    delAll () {
+      localStorage.clear();
+      this.items = [];
+    },
+    delFave (item) {
+      const index = this.items.indexOf(item);
+      if (index > -1) {
+        this.items.splice(index, 1);
+      }
+      localStorage.setItem(storageKey, JSON.stringify(this.items));
+    },
+    editFave (item) {
+      this.oldItem = item;
+      this.item = { ...item };
+      this.showDialog = true;
+      this.onEdit = true;
+    },
+    getImage (url) {
+      if (url === StringConstants.STRING_EMPTY) {
+        url = this.decodeUrl(url);
+      }
+
+      return `${StringConstants.FAVEICON_PATH}${url}`;
+    },
+    navigateURL (item) {
+      let { url } = item;
+      url = this.decodeUrl(url);
+      window.open(url);
+    },
+    save () {
+      if (this.showDialog) {
+        if (this.item.url !== StringConstants.STRING_EMPTY && this.item.url !== undefined) {
+          if (this.onEdit === false) {
+            this.items.push(this.item);
+          } else {
+            const index = this.items.indexOf(this.oldItem);
+            if (index > -1) {
+              // My issue here
+              this.$set(this.items, index, this.item);
+            }
+          }
+          localStorage.setItem(storageKey, JSON.stringify(this.items));
+          this.close();
+        } else {
+          this.$refs.listForm.validate(false, this.item.url);
+        }
+      }
+    },
+  },
+  computed: {
+    filteredList () {
+      const { search } = this;
+      return this.items.filter((i) => {
+        if (i == null) {
+          return;
+        }
+        let { url } = i;
+        if (url != null) {
+          url = url.replace(StringConstants.WEB_HTTPS_PREFIX, StringConstants.STRING_EMPTY);
+          url = url.replace(StringConstants.WEB_HTTPS, StringConstants.STRING_EMPTY);
+        }
+        return (
+          (url != null
+            && url.toLowerCase().includes(search.toLowerCase()))
+          || (i.name != null
+            && i.name.toLowerCase().includes(search.toLowerCase()))
+          || (i.description != null
+            && i.description.toLowerCase().includes(search.toLowerCase()))
+        );
+      });
+    },
   },
 };
 </script>
@@ -319,5 +333,27 @@ export default {
 <style>
 .alignCenter {
   text-align: center;
+}
+.icon {
+  height: inherit;
+  width: inherit;
+  border-radius: 50%;
+}
+
+/* width */
+.listClass::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.listClass::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 5px;
+}
+
+/* Handle */
+.listClass::-webkit-scrollbar-thumb {
+  background: grey;
+  border-radius: 10px;
 }
 </style>

@@ -1,0 +1,102 @@
+======================================================================================
+MenuButton.vue 
+======================================================================================
+
+------------
+Summary
+------------
+To create dropdown buttons 
+
+------------
+Props
+------------
+1. menuAction (Mandatory) 
+    - Array of Object { buttonName, event, icon, } 
+    - To provide icon / name to icon and the emitted click event
+    
+2. eventBus (Mandatory) 
+    - Object 
+    - Event Bus to emit event to
+
+3. actionItem (Optional)  
+    - Object { } 
+    - Object to be returned to event
+
+4. menuOption (Optional)  
+    - Object { icon, color } 
+    - Customize button
+
+------------
+Steps to use
+------------
+
+Step 1: Import MenuButton.vue and add to components
+Step 2: Create Props and add to components
+Step 3: Register event to event bus (created)
+Step 4: Write methods for buttons 
+
+-----------
+Sample
+-----------
+
+HTML
+```````
+<MenuButton
+    :menuAction="menuAction"
+    :actionItem="itemList"
+    :menuOption="menuOption"
+    :eventBus="$eventHub"
+/>
+
+Script
+````````
+
+  data () {
+    return {
+      menuAction: [
+        {
+          buttonName: StringConstants.EDIT,
+          event: EventConstants.EDIT_FAVE_EVENT,
+          icon: 'mdi-pencil',
+        },
+        {
+          buttonName: StringConstants.DELETE,
+          event: EventConstants.DEL_FAVE_EVENT,
+          icon: 'mdi-delete-variant',
+        },
+        {
+          buttonName: StringConstants.OPEN_URL,
+          event: EventConstants.OPEN_URL_EVENT,
+          icon: 'mdi-arrow-top-left-bold-outline',
+        },
+      ],
+      menuOption: {
+        color: 'grey',
+      },
+    }
+  },
+   created () {
+      // Register Events
+      this.$eventHub.$on(EventConstants.DEL_FAVE_EVENT, this.delFave);
+      this.$eventHub.$on(EventConstants.EDIT_FAVE_EVENT, this.editFave);
+      this.$eventHub.$on(EventConstants.OPEN_URL_EVENT, this.navigateURL);
+      // End Register Events
+   },
+   method() {
+    delFave (item) {
+
+    },
+    editFave (item) {
+
+    },
+    nativateURL (item) {
+
+    }
+   }
+
+* Note *
+itemList is an object passed from v-for of an Object Array
+$eventHub is an eventbus registered on main.js:
+  Vue.prototype.$eventHub = new Vue();
+
+======================================================================================
