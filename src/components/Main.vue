@@ -2,6 +2,7 @@
   <v-sheet
     id="scrolling-techniques-7"
     max-height="90vh"
+    style="position: relative;"
   >
     <v-container @contextmenu.prevent="">
       <template>
@@ -93,12 +94,23 @@
             flat
             v-if="!checkItems()"
           >
+
+            <v-btn
+              v-if="sortable"
+              color="blue darken-1"
+              text
+              class="sortableMenu"
+              @click="sortable = !sortable"
+            >Done</v-btn>
+
             <v-text-field
+              v-else
               label="Search"
               append-icon="mdi-magnify"
               v-model="search"
               style="padding-top: 5vh;"
             ></v-text-field>
+
           </v-toolbar>
           <v-list
             dense
@@ -115,35 +127,58 @@
                 <span> No data available </span>
               </div>
               <div v-else>
-                <!-- <draggable
+                <Draggable
                   v-model="items"
-                  :move="onMove"
-                > -->
-                <v-list-item
-                  v-for="(itemList, i) in filteredList"
-                  :key="i"
-                  @click="navigateURL(itemList)"
+                  @end="onEnd"
+                  draggable=".dragItems"
                 >
+                  <v-list-item
+                    v-for="(itemList, i) in filteredList"
+                    :key="i"
+                    :class="{ dragItems : true}"
+                    selectable
+                  >
+                    <v-list-item-avatar :class="{ dragItems : true}">
+                      <v-img :src="getImage(itemList.url)"></v-img>
+                    </v-list-item-avatar>
 
-                  <v-list-item-avatar>
-                    <v-img :src="getImage(itemList.url)"></v-img>
-                  </v-list-item-avatar>
+                    <v-list-item-content
+                      @click="navigateURL(itemList)"
+                      :class="{ dragItems : true, leftMargin: sortable}"
+                    >
+                      <v-list-item-title v-html="itemList.name"></v-list-item-title>
+                      <v-list-item-subtitle v-html="itemList.description"></v-list-item-subtitle>
+                    </v-list-item-content>
 
-                  <v-list-item-content>
-                    <v-list-item-title v-html="itemList.name"></v-list-item-title>
-                    <v-list-item-subtitle v-html="itemList.description"></v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <MenuButton
-                      :menuAction="menuAction"
-                      :actionItem="itemList"
-                      :menuOption="menuOption"
-                      :eventBus="$eventHub"
-                    />
-                  </v-list-item-action>
+                    <v-list-item-action
+                      v-if="sortable"
+                      :class="{ dragItems : false}"
+                    >
+                      <v-tooltip right>
+                        <template v-slot:activator="{ on }">
+                          <v-icon v-on='on'> mdi-menu </v-icon>
+                        </template>
+                        <span>Sort Order</span>
+                      </v-tooltip>
 
-                </v-list-item>
-                <!-- </draggable> -->
+                      <!-- <v-list-item-action>
+                        <v-checkbox @click="selectItem"></v-checkbox>
+                      </v-list-item-action> -->
+                    </v-list-item-action>
+                    <v-list-item-action
+                      v-else
+                      :class="{ dragItems : true}"
+                    >
+                      <MenuButton
+                        :menuAction="menuAction"
+                        :actionItem="itemList"
+                        :menuOption="menuOption"
+                        :eventBus="$eventHub"
+                      />
+                    </v-list-item-action>
+
+                  </v-list-item>
+                </Draggable>
               </div>
             </v-list-item-group>
           </v-list>
@@ -158,8 +193,8 @@ import GlobalMixins from '@/mixins/GlobalMixins';
 import EventConstants from '@/constants/EventConstants';
 import MenuButton from '@/components/MenuButton.vue';
 import ListModel from '@/model/ListModel';
-import StringConstants from '../constants/StringConstants';
-// import draggable from 'vuedraggable';
+import Draggable from 'vuedraggable';
+import StringConstants from '@/constants/StringConstants';
 
 const { localStorage } = window;
 const storageKey = StringConstants.STORAGE_ITEMS_KEY;
@@ -169,10 +204,11 @@ export default {
   mixins: [GlobalMixins],
   components: {
     MenuButton,
-    // draggable,
+    Draggable,
   },
   data () {
     return {
+      alert: true,
       item: new ListModel(),
       items: [],
       menuAction: [
@@ -182,14 +218,14 @@ export default {
           icon: 'mdi-pencil',
         },
         {
+          buttonName: StringConstants.SORT,
+          event: EventConstants.SORT_EVENT,
+          icon: 'mdi-menu',
+        },
+        {
           buttonName: StringConstants.DELETE,
           event: EventConstants.DEL_FAVE_EVENT,
           icon: 'mdi-delete-variant',
-        },
-        {
-          buttonName: StringConstants.OPEN_URL,
-          event: EventConstants.OPEN_URL_EVENT,
-          icon: 'mdi-arrow-top-left-bold-outline',
         },
       ],
       oldItem: new ListModel(),
@@ -202,9 +238,9 @@ export default {
       selectedCount: 0,
       selectedItems: [],
       showDialog: false,
+      sortable: false,
       urlRule: [
-        (v) => (v !== undefined) || StringConstants.BLANK_VALIDATION('URL'),
-        (v) => (v !== StringConstants.STRING_EMPTY) || StringConstants.BLANK_VALIDATION('URL'),
+        (v) => (this.checkExist(v)) || StringConstants.BLANK_VALIDATION('URL'),
       ],
       valid: false,
       value: false,
@@ -217,6 +253,19 @@ export default {
     this.$eventHub.$on(EventConstants.OPEN_URL_EVENT, this.navigateURL);
     this.$eventHub.$on(EventConstants.ADD_FAVE_EVENT, this.addFave);
     this.$eventHub.$on(EventConstants.DEL_ALL_EVENT, this.delAll);
+    this.$eventHub.$on(EventConstants.SORT_EVENT, this.setSortable);
+
+    const that = this;
+
+    document.addEventListener(EventConstants.KEYUP_EVENT, (evt) => {
+      if (evt.keyCode === EventConstants.KEYBOARD_ESCAPE) {
+        that.close();
+      }
+
+      if (evt.keyCode === EventConstants.KEYBOARD_ENTER) {
+        that.save();
+      }
+    });
     // End Register Events
 
     if (localStorage.getItem(storageKey) !== null) {
@@ -275,7 +324,7 @@ export default {
       if (index > -1) {
         this.items.splice(index, 1);
       }
-      localStorage.setItem(storageKey, JSON.stringify(this.items));
+      this.saveToLocalStorage();
     },
     editFave (item) {
       this.oldItem = item;
@@ -297,7 +346,7 @@ export default {
     },
     save () {
       if (this.showDialog) {
-        if (this.item.url !== StringConstants.STRING_EMPTY && this.item.url !== undefined) {
+        if (this.checkExist(this.item.url)) {
           if (this.onEdit === false) {
             this.items.push(this.item);
           } else {
@@ -307,12 +356,26 @@ export default {
               this.$set(this.items, index, this.item);
             }
           }
-          localStorage.setItem(storageKey, JSON.stringify(this.items));
+          const { name } = this.item;
+          this.saveToLocalStorage();
           this.close();
+          this.$parent.$parent.showAlert(name);
         } else {
           this.$refs.listForm.validate(false, this.item.url);
         }
       }
+    },
+    saveToLocalStorage () {
+      localStorage.setItem(storageKey, JSON.stringify(this.items));
+    },
+    selectItem (index) {
+      this.selectedList(index);
+    },
+    setSortable () {
+      this.sortable = !this.sortable;
+    },
+    onEnd () {
+      this.saveToLocalStorage();
     },
   },
   computed: {
@@ -373,6 +436,20 @@ export default {
   width: 60vw;
   height: 89vh;
 }
+
+.leftMargin {
+  margin-left: 2vw;
+}
+
+.sortableMenu {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.sortableMenu:hover {
+  color: red;
+}
+
 @media only screen and (max-width: 800px) {
   .listClass {
     padding-top: 2vh;

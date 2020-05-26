@@ -8,6 +8,7 @@ const DEL_ALL = 'Delete All';
 const EDIT = 'Edit';
 const DELETE = 'Delete';
 const OPEN_URL = 'Open URL';
+const SORT = 'Sort';
 /* #endregion */
 
 /* #region  URL Path */
@@ -35,6 +36,7 @@ export default {
   EDIT,
   DELETE,
   OPEN_URL,
+  SORT,
   FAVEICON_PATH,
   WEB_WWW,
   WEB_HTTPS,

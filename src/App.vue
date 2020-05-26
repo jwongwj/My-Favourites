@@ -2,11 +2,21 @@
   <v-app>
     <Navbar />
     <Main />
-    <v-content>
-      <v-container fluid>
-
-      </v-container>
-    </v-content>
+    <div style="margin-bottom: 0px;">
+      <v-alert
+        v-model="alert"
+        dismissible
+        border="left"
+        elevation="2"
+        colored-border
+        type="success"
+        class="alertDiaglog"
+      >
+        <div>
+          <div v-html="htmlAlertMessage"></div>
+        </div>
+      </v-alert>
+    </div>
   </v-app>
 </template>
 
@@ -19,6 +29,26 @@ export default {
     Navbar,
     Main,
   },
+  data () {
+    return {
+      alert: false,
+      alertMessage: '',
+    };
+  },
+  methods: {
+    showAlert (msg) {
+      this.alert = true;
+      this.alertMessage = msg;
+      setTimeout(() => {
+        this.alert = false;
+      }, 5000);
+    },
+  },
+  computed: {
+    htmlAlertMessage () {
+      return `<strong>${this.alertMessage}</strong> has been added to Favourites`;
+    },
+  },
 };
 </script>
 
@@ -29,6 +59,13 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   /* text-align: center; */
   color: #2c3e50;
+}
+
+.alertDiaglog {
+  max-width: 800px;
+  text-align: center;
+  margin: 0 auto;
+  background-color: #dbf1de !important;
 }
 </style>
 

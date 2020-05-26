@@ -20,16 +20,15 @@
 
 <script>
 import MenuButton from '@/components/MenuButton.vue';
-import StringConstants from '../constants/StringConstants';
-import EventConstants from '../constants/EventConstants';
+import StringConstants from '@/constants/StringConstants';
+import EventConstants from '@/constants/EventConstants';
 
 export default {
   name: 'Navbar',
-  components: {
-    MenuButton,
-  },
+  components: { MenuButton },
   data () {
     return {
+      action: StringConstants.STRING_EMPTY,
       menuAction: [
         {
           buttonName: StringConstants.ADD_NEW_FAVE,
@@ -43,6 +42,14 @@ export default {
         },
       ],
     };
+  },
+  created () {
+    this.$eventHub.$on('actionEvent', this.actionCalled);
+  },
+  methods: {
+    actionCalled (action) {
+      this.action = action;
+    },
   },
 };
 </script>

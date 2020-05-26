@@ -36,8 +36,11 @@
 </template>
 
 <script>
+import GlobalMixins from '@/mixins/GlobalMixins';
+
 export default {
   name: 'Navbar',
+  mixins: [GlobalMixins],
   props: {
     menuAction: Array,
     actionItem: Object,
@@ -49,13 +52,13 @@ export default {
       this.eventBus.$emit(event, item);
     },
     getIcon () {
-      if (this.menuOption === undefined || this.menuOption.icon === undefined) {
+      if (!this.checkExist(this.menuOption) || !this.checkExist(this.menuOption.icon)) {
         return 'mdi-dots-vertical';
       }
       return this.menuOption.icon;
     },
     getColor () {
-      if (this.menuOption === undefined || this.menuOption.color === undefined) {
+      if (!this.checkExist(this.menuOption) || !this.checkExist(this.menuOption.color)) {
         return 'black';
       }
       return this.menuOption.color;
