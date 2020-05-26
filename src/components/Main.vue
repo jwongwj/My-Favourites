@@ -81,11 +81,11 @@
           </v-dialog>
         </v-row>
       </template>
-      <v-row style="padding-top: 5%;">
+      <v-row
+        style="padding-top: 5%;"
+        class="minClassSize"
+      >
         <v-card
-          max-width="800"
-          width="60vw"
-          height="89vh"
           tile
           class="mx-auto overflow-y-auto listClass"
         >
@@ -199,6 +199,8 @@ export default {
       },
       revert: false,
       search: StringConstants.STRING_EMPTY,
+      selectedCount: 0,
+      selectedItems: [],
       showDialog: false,
       urlRule: [
         (v) => (v !== undefined) || StringConstants.BLANK_VALIDATION('URL'),
@@ -227,6 +229,15 @@ export default {
       if (this.$refs.listForm) {
         this.$refs.listForm.reset();
       }
+    },
+    changeSelectedItem (item) {
+      const index = this.selectedItems.indexOf(item);
+      if (index > -1) {
+        this.selectedItems.splice(index, 1);
+      } else {
+        this.selectedItems.push(item);
+      }
+      this.selectedCount = this.selectedItems.length;
     },
     checkItems () {
       if (this.items === StringConstants.STRING_EMPTY) {
@@ -355,5 +366,18 @@ export default {
 .listClass::-webkit-scrollbar-thumb {
   background: grey;
   border-radius: 10px;
+}
+
+.listClass {
+  max-width: 800px;
+  width: 60vw;
+  height: 89vh;
+}
+@media only screen and (max-width: 800px) {
+  .listClass {
+    padding-top: 2vh;
+    width: 100%;
+    height: 94vh;
+  }
 }
 </style>

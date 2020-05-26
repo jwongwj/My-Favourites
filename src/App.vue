@@ -1,9 +1,10 @@
 <template>
   <v-app>
     <Navbar />
+    <Main />
     <v-content>
       <v-container fluid>
-        <Main />
+
       </v-container>
     </v-content>
   </v-app>

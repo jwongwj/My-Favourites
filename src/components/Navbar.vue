@@ -3,6 +3,7 @@
     absolute
     color="white"
     elevate-on-scroll
+    elevation="2"
     scroll-target="#scrolling-techniques-7"
   >
     <v-toolbar-title>Favourites</v-toolbar-title>
