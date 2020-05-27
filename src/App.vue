@@ -9,11 +9,10 @@
         border="left"
         elevation="2"
         colored-border
-        type="success"
-        class="alertDiaglog"
+        :type="alertType"
+        :class="alertClass"
       >
-        <div>
-          <div v-html="htmlAlertMessage"></div>
+        <div v-html="htmlAlertMessage">
         </div>
       </v-alert>
     </div>
@@ -23,6 +22,7 @@
 <script>
 import Navbar from '@/components/Navbar.vue';
 import Main from '@/components/Main.vue';
+import StringConstants from '@/constants/StringConstants';
 
 export default {
   components: {
@@ -32,21 +32,51 @@ export default {
   data () {
     return {
       alert: false,
-      alertMessage: '',
+      alertMessage: StringConstants.STRING_EMPTY,
+      alertType: 'success',
+      eventMessage: StringConstants.STRING_EMPTY,
     };
   },
   methods: {
-    showAlert (msg) {
-      this.alert = true;
-      this.alertMessage = msg;
-      setTimeout(() => {
-        this.alert = false;
-      }, 5000);
+    showAlert (itemName, message, alertType) {
+      if (itemName == null) {
+        itemName = StringConstants.STRING_EMPTY;
+      }
+      this.createAlert(itemName, message, alertType);
+    },
+    createAlert (itemName, message, alertType) {
+      if (!this.alert) {
+        this.alert = true;
+        this.alertMessage = itemName;
+        this.eventMessage = message;
+        this.alertType = alertType;
+        setTimeout(() => {
+          this.resetAlerts();
+        }, 5000);
+      } else {
+        setTimeout(() => {
+          this.createAlert(itemName, message, alertType);
+        }, 1000);
+      }
+    },
+    resetAlerts () {
+      this.alertMessage = StringConstants.STRING_EMPTY;
+      this.eventMessage = StringConstants.STRING_EMPTY;
+      this.alertType = 'success';
+      this.alert = false;
     },
   },
   computed: {
     htmlAlertMessage () {
-      return `<strong>${this.alertMessage}</strong> has been added to Favourites`;
+      return `<strong>${this.alertMessage}</strong>${this.eventMessage}`;
+    },
+    alertClass () {
+      const success = this.alertType === 'success';
+      return {
+        alertDialog: true,
+        deleteDialog: !success,
+        successDialog: success,
+      };
     },
   },
 };
@@ -61,11 +91,18 @@ export default {
   color: #2c3e50;
 }
 
-.alertDiaglog {
+.alertDialog {
   max-width: 800px;
   text-align: center;
   margin: 0 auto;
+}
+
+.successDialog {
   background-color: #dbf1de !important;
+}
+
+.deleteDialog {
+  background-color: #ffe9e9 !important;
 }
 </style>
 

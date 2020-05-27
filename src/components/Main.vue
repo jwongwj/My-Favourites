@@ -96,13 +96,28 @@
           >
 
             <v-btn
-              v-if="sortable"
               color="blue darken-1"
               text
               class="sortableMenu"
+              v-if="sortable"
               @click="sortable = !sortable"
             >Done</v-btn>
-
+            <div
+              v-else-if="multiSelect"
+              style="display: flex; width: 100%"
+            >
+              <v-btn
+                color="red darken-1"
+                text
+                @click="deleteSelected"
+              >Delete Selected</v-btn>
+              <v-btn
+                color="red darken-1"
+                text
+                class="sortableMenu"
+                @click="toggleMultiselect"
+              >X</v-btn>
+            </div>
             <v-text-field
               v-else
               label="Search"
@@ -135,16 +150,28 @@
                   <v-list-item
                     v-for="(itemList, i) in filteredList"
                     :key="i"
-                    :class="{ dragItems : true}"
+                    :class="{dragItems : true}"
                     selectable
+                    v-longpress
+                    :ripple="false"
                   >
-                    <v-list-item-avatar :class="{ dragItems : true}">
+                    <v-list-item-action
+                      v-if="multiSelect"
+                      @click="selectItem(itemList)"
+                    >
+                      <!-- Checkbox :checked is actually input-value -->
+                      <v-checkbox :input-value="itemList.checked"></v-checkbox>
+                    </v-list-item-action>
+                    <v-list-item-avatar
+                      :class="{dragItems : true}"
+                      @click="setMultiSelect(itemList)"
+                    >
                       <v-img :src="getImage(itemList.url)"></v-img>
                     </v-list-item-avatar>
 
                     <v-list-item-content
                       @click="navigateURL(itemList)"
-                      :class="{ dragItems : true, leftMargin: sortable}"
+                      :class="{dragItems : true, leftMargin: sortable || multiSelect}"
                     >
                       <v-list-item-title v-html="itemList.name"></v-list-item-title>
                       <v-list-item-subtitle v-html="itemList.description"></v-list-item-subtitle>
@@ -152,7 +179,7 @@
 
                     <v-list-item-action
                       v-if="sortable"
-                      :class="{ dragItems : false}"
+                      :class="{dragItems : false}"
                     >
                       <v-tooltip right>
                         <template v-slot:activator="{ on }">
@@ -161,12 +188,9 @@
                         <span>Sort Order</span>
                       </v-tooltip>
 
-                      <!-- <v-list-item-action>
-                        <v-checkbox @click="selectItem"></v-checkbox>
-                      </v-list-item-action> -->
                     </v-list-item-action>
                     <v-list-item-action
-                      v-else
+                      v-else-if="!multiSelect"
                       :class="{ dragItems : true}"
                     >
                       <MenuButton
@@ -218,7 +242,7 @@ export default {
           icon: 'mdi-pencil',
         },
         {
-          buttonName: StringConstants.SORT,
+          buttonName: StringConstants.MOVE,
           event: EventConstants.SORT_EVENT,
           icon: 'mdi-menu',
         },
@@ -230,9 +254,11 @@ export default {
       ],
       oldItem: new ListModel(),
       onEdit: false,
+      multiSelect: false,
       menuOption: {
         color: 'grey',
       },
+      navigate: true,
       revert: false,
       search: StringConstants.STRING_EMPTY,
       selectedCount: 0,
@@ -275,18 +301,10 @@ export default {
   methods: {
     addFave () {
       this.showDialog = true;
+      this.onEdit = false;
       if (this.$refs.listForm) {
         this.$refs.listForm.reset();
       }
-    },
-    changeSelectedItem (item) {
-      const index = this.selectedItems.indexOf(item);
-      if (index > -1) {
-        this.selectedItems.splice(index, 1);
-      } else {
-        this.selectedItems.push(item);
-      }
-      this.selectedCount = this.selectedItems.length;
     },
     checkItems () {
       if (this.items === StringConstants.STRING_EMPTY) {
@@ -298,6 +316,9 @@ export default {
       this.item = new ListModel();
       this.showDialog = false;
       this.onEdit = false;
+      this.sortable = false;
+      this.multiSelect = false;
+      this.selectedItems = [];
     },
     decodeUrl (url) {
       if (url === StringConstants.STRING_EMPTY || url === undefined) {
@@ -318,13 +339,24 @@ export default {
     delAll () {
       localStorage.clear();
       this.items = [];
+      this.$parent.$parent.showAlert('All items', StringConstants.DELETED_ALL_MESSAGE, StringConstants.DELETED_ALERT);
     },
     delFave (item) {
       const index = this.items.indexOf(item);
       if (index > -1) {
         this.items.splice(index, 1);
+        this.saveToLocalStorage();
       }
-      this.saveToLocalStorage();
+    },
+    deleteSelected () {
+      if (this.selectedItems.length > 0) {
+        const message = (this.selectedItems.length > 1) ? `${this.selectedItems.length} items` : `${this.selectedItems.length} item`;
+        for (let i = 0; i < this.selectedItems.length; i++) {
+          this.delFave(this.selectedItems[i]);
+        }
+        this.$parent.$parent.showAlert(message, StringConstants.DELETED_ALL_MESSAGE, StringConstants.DELETED_ALERT);
+        this.toggleMultiselect();
+      }
     },
     editFave (item) {
       this.oldItem = item;
@@ -340,13 +372,19 @@ export default {
       return `${StringConstants.FAVEICON_PATH}${url}`;
     },
     navigateURL (item) {
-      let { url } = item;
-      url = this.decodeUrl(url);
-      window.open(url);
+      if (this.navigate) {
+        let { url } = item;
+        url = this.decodeUrl(url);
+        window.open(url);
+        this.navigate = true;
+      }
     },
     save () {
       if (this.showDialog) {
         if (this.checkExist(this.item.url)) {
+          this.item.checked = false;
+          const action = this.onEdit ? StringConstants.EDITED_MESSAGE : StringConstants.ADDED_MESSAGE;
+
           if (this.onEdit === false) {
             this.items.push(this.item);
           } else {
@@ -359,7 +397,8 @@ export default {
           const { name } = this.item;
           this.saveToLocalStorage();
           this.close();
-          this.$parent.$parent.showAlert(name);
+
+          this.$parent.$parent.showAlert(name, action, StringConstants.SUCCESS_ALERT);
         } else {
           this.$refs.listForm.validate(false, this.item.url);
         }
@@ -368,11 +407,38 @@ export default {
     saveToLocalStorage () {
       localStorage.setItem(storageKey, JSON.stringify(this.items));
     },
-    selectItem (index) {
-      this.selectedList(index);
+    selectItem (item) {
+      const indexMainList = this.items.indexOf(item);
+      if (indexMainList > -1) {
+        item.checked = !item.checked;
+        this.$set(this.items, indexMainList, item);
+      }
+
+      const index = this.selectedItems.indexOf(item);
+      if (index > -1) {
+        this.selectedItems.splice(index, 1);
+      } else {
+        this.selectedItems.push(item);
+      }
+      this.selectedCount = this.selectedItems.length;
+    },
+    setMultiSelect (item) {
+      if (!this.sortable) {
+        this.multiSelect = true;
+        this.navigate = false;
+
+        if (this.checkExist(item)) {
+          this.selectItem(item);
+        }
+      }
     },
     setSortable () {
       this.sortable = !this.sortable;
+    },
+    toggleMultiselect () {
+      this.multiSelect = false;
+      this.navigate = true;
+      this.selectedItems = [];
     },
     onEnd () {
       this.saveToLocalStorage();
@@ -399,6 +465,48 @@ export default {
             && i.description.toLowerCase().includes(search.toLowerCase()))
         );
       });
+    },
+  },
+  directives: {
+    longpress: {
+      bind (el, binding, vNode) {
+        // Define variable
+        let pressTimer = null;
+
+
+        // Cancel Timeout
+        const cancel = () => {
+          // Check if timer has a value or not
+          if (pressTimer !== null) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+          }
+        };
+
+        // Define funtion handlers
+        // Create timeout ( run function after 1s )
+        const start = (e) => {
+          if (e.type === 'click' && e.button !== 0) {
+            return;
+          }
+
+          if (pressTimer === null) {
+            pressTimer = setTimeout(() => {
+              // Run function
+              console.log(binding.value);
+              vNode.context.setMultiSelect();
+            }, 1000);
+          }
+        };
+        // Add Event listeners
+        el.addEventListener('mousedown', start);
+        el.addEventListener('touchstart', start);
+        // Cancel timeouts if this events happen
+        el.addEventListener('click', cancel);
+        el.addEventListener('mouseout', cancel);
+        el.addEventListener('touchend', cancel);
+        el.addEventListener('touchcancel', cancel);
+      },
     },
   },
 };
@@ -444,6 +552,7 @@ export default {
 .sortableMenu {
   margin-left: auto;
   margin-right: 0;
+  display: block;
 }
 
 .sortableMenu:hover {
