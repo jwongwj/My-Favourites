@@ -7,6 +7,12 @@ const SORT_EVENT = 'sortEvent';
 const ADDED_EVENT = 'addedFave';
 const EDITED_EVENT = 'editedFave';
 const KEYUP_EVENT = 'keyup';
+const CLICK_EVENT = 'click';
+const MOUSEDOWN_EVENT = 'mousedown';
+const TOUCHSTART_EVENT = 'touchstart';
+const MOUSEOUT_EVENT = 'mouseout';
+const TOUCHEND_EVENT = 'touchend';
+const TOUCHCANCEL_EVENT = 'touchcancel';
 const KEYBOARD_ESCAPE = 27;
 const KEYBOARD_ENTER = 13;
 
@@ -22,4 +28,10 @@ export default {
   KEYBOARD_ENTER,
   ADDED_EVENT,
   EDITED_EVENT,
+  CLICK_EVENT,
+  MOUSEDOWN_EVENT,
+  TOUCHSTART_EVENT,
+  MOUSEOUT_EVENT,
+  TOUCHEND_EVENT,
+  TOUCHCANCEL_EVENT,
 };

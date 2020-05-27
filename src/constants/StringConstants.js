@@ -36,6 +36,8 @@ const ADDED_MESSAGE = ' has been added to Favourites';
 const EDITED_MESSAGE = ' has been edited';
 const DELETED_SINGLE_MESSAGE = ' has been deleted';
 const DELETED_ALL_MESSAGE = ' have been deleted';
+const ITEM = 'item';
+const ITEMS = 'items';
 /* #endregion */
 
 const SUCCESS_ALERT = 'success';
@@ -63,4 +65,6 @@ export default {
   SUCCESS_ALERT,
   DELETED_SINGLE_MESSAGE,
   DELETED_ALL_MESSAGE,
+  ITEM,
+  ITEMS,
 };

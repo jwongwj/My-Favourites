@@ -83,7 +83,7 @@
         </v-row>
       </template>
       <v-row
-        style="padding-top: 5%;"
+        style="padding-top: 4%;"
         class="minClassSize"
       >
         <v-card
@@ -318,6 +318,7 @@ export default {
       this.onEdit = false;
       this.sortable = false;
       this.multiSelect = false;
+      this.uncheckAllItems(this.selectedItems);
       this.selectedItems = [];
     },
     decodeUrl (url) {
@@ -337,24 +338,34 @@ export default {
       return url;
     },
     delAll () {
-      localStorage.clear();
-      this.items = [];
-      this.$parent.$parent.showAlert('All items', StringConstants.DELETED_ALL_MESSAGE, StringConstants.DELETED_ALERT);
+      const { length } = this.items;
+      if (length > 0) {
+        const itemMsg = (length > 1) ? `${length} ${StringConstants.ITEMS}` : `${length} ${StringConstants.ITEM}`;
+        const delMsg = (length > 1) ? `${length} ${StringConstants.DELETED_ALL_MESSAGE}` : `${length} ${StringConstants.DELETED_SINGLE_MESSAGE}`;
+        localStorage.removeItem(StringConstants.STORAGE_ITEMS_KEY);
+        this.items = [];
+        this.getMainContext().showAlert(itemMsg, delMsg, StringConstants.DELETED_ALERT);
+      }
     },
     delFave (item) {
       const index = this.items.indexOf(item);
       if (index > -1) {
+        const { name } = this.items[index];
         this.items.splice(index, 1);
         this.saveToLocalStorage();
+        this.getMainContext().showAlert(name, StringConstants.DELETED_SINGLE_MESSAGE, StringConstants.DELETED_ALERT);
       }
     },
     deleteSelected () {
-      if (this.selectedItems.length > 0) {
-        const message = (this.selectedItems.length > 1) ? `${this.selectedItems.length} items` : `${this.selectedItems.length} item`;
+      const { length } = this.selectedItems;
+      if (length > 0) {
+        const message = (length > 1) ? `${length} ${StringConstants.ITEMS}` : `${length} ${StringConstants.ITEM}`;
+        const delMsg = (length > 1) ? `${length} ${StringConstants.DELETED_ALL_MESSAGE}` : `${length} ${StringConstants.DELETED_SINGLE_MESSAGE}`;
         for (let i = 0; i < this.selectedItems.length; i++) {
           this.delFave(this.selectedItems[i]);
         }
-        this.$parent.$parent.showAlert(message, StringConstants.DELETED_ALL_MESSAGE, StringConstants.DELETED_ALERT);
+        debugger;
+        this.getMainContext().showAlert(message, delMsg, StringConstants.DELETED_ALERT);
         this.toggleMultiselect();
       }
     },
@@ -370,6 +381,9 @@ export default {
       }
 
       return `${StringConstants.FAVEICON_PATH}${url}`;
+    },
+    getMainContext () {
+      return this.$parent.$parent;
     },
     navigateURL (item) {
       if (this.navigate) {
@@ -398,7 +412,7 @@ export default {
           this.saveToLocalStorage();
           this.close();
 
-          this.$parent.$parent.showAlert(name, action, StringConstants.SUCCESS_ALERT);
+          this.getMainContext().showAlert(name, action, StringConstants.SUCCESS_ALERT);
         } else {
           this.$refs.listForm.validate(false, this.item.url);
         }
@@ -438,10 +452,21 @@ export default {
     toggleMultiselect () {
       this.multiSelect = false;
       this.navigate = true;
+      this.uncheckAllItems(this.selectedItems);
       this.selectedItems = [];
     },
     onEnd () {
       this.saveToLocalStorage();
+    },
+    uncheckAllItems (selected) {
+      for (let i = 0; i < selected.length; i++) {
+        const index = this.items.indexOf(selected[i]);
+        if (index > -1) {
+          const item = this.items[index];
+          item.checked = false;
+          this.$set(this.items, index, item);
+        }
+      }
     },
   },
   computed: {
@@ -470,9 +495,10 @@ export default {
   directives: {
     longpress: {
       bind (el, binding, vNode) {
+        // Source: https://blog.logrocket.com/building-a-long-press-directive-in-vue-3408d60fb511/
+
         // Define variable
         let pressTimer = null;
-
 
         // Cancel Timeout
         const cancel = () => {
@@ -486,26 +512,26 @@ export default {
         // Define funtion handlers
         // Create timeout ( run function after 1s )
         const start = (e) => {
-          if (e.type === 'click' && e.button !== 0) {
+          if (e.type === EventConstants.CLICK_EVENT && e.button !== 0) {
             return;
           }
 
           if (pressTimer === null) {
             pressTimer = setTimeout(() => {
               // Run function
-              console.log(binding.value);
               vNode.context.setMultiSelect();
             }, 1000);
           }
         };
+
         // Add Event listeners
-        el.addEventListener('mousedown', start);
-        el.addEventListener('touchstart', start);
+        el.addEventListener(EventConstants.MOUSEDOWN_EVENT, start);
+        el.addEventListener(EventConstants.TOUCHSTART_EVENT, start);
         // Cancel timeouts if this events happen
-        el.addEventListener('click', cancel);
-        el.addEventListener('mouseout', cancel);
-        el.addEventListener('touchend', cancel);
-        el.addEventListener('touchcancel', cancel);
+        el.addEventListener(EventConstants.CLICK_EVENT, cancel);
+        el.addEventListener(EventConstants.MOUSEOUT_EVENT, cancel);
+        el.addEventListener(EventConstants.TOUCHEND_EVENT, cancel);
+        el.addEventListener(EventConstants.TOUCHCANCEL_EVENT, cancel);
       },
     },
   },
@@ -543,6 +569,7 @@ export default {
   max-width: 800px;
   width: 60vw;
   height: 89vh;
+  overflow-x: hidden;
 }
 
 .leftMargin {
@@ -553,10 +580,6 @@ export default {
   margin-left: auto;
   margin-right: 0;
   display: block;
-}
-
-.sortableMenu:hover {
-  color: red;
 }
 
 @media only screen and (max-width: 800px) {
