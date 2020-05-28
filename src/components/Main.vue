@@ -357,7 +357,7 @@ export default {
       if (length > 0) {
         const itemMsg = (length > 1) ? `${length} ${StringConstants.ITEMS}` : `${length} ${StringConstants.ITEM}`;
         const delMsg = (length > 1) ? `${StringConstants.DELETED_ALL_MESSAGE}` : `${StringConstants.DELETED_SINGLE_MESSAGE}`;
-        localStorage.removeItem(StringConstants.STORAGE_ITEMS_KEY);
+        localStorage.removeItem(this.$store.state.currentKey);
         this.items = [];
         this.getMainContext().showAlert(itemMsg, delMsg, StringConstants.DELETED_ALERT);
       }
@@ -482,7 +482,7 @@ export default {
       this.selectedItems = [];
     },
     onEnd () {
-      // this.saveToLocalStorage();
+      this.saveToLocalStorage();
     },
     uncheckAllItems (selected) {
       for (let i = 0; i < selected.length; i++) {

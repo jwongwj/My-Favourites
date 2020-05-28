@@ -58,6 +58,7 @@
                 <Draggable
                   v-model="folders"
                   @dragend="log"
+                  @end="onEnd"
                   draggable=".dragFolders"
                   group="dragFolders"
                 >
@@ -324,6 +325,9 @@ export default {
       } else {
         this.showAlert('', 'At least one folder needs to remain', StringConstants.DELETED_ALERT);
       }
+    },
+    onEnd () {
+      localStorage.setItem('keysForFolders', JSON.stringify(this.folders));
     },
   },
 };
