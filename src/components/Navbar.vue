@@ -1,12 +1,19 @@
 <template>
   <v-app-bar
     absolute
-    color="white"
-    elevate-on-scroll
     elevation="2"
-    scroll-target="#scrolling-techniques-7"
+    class='navbarColor'
   >
-    <v-toolbar-title>Favourites</v-toolbar-title>
+
+    <v-btn
+      color="transparent"
+      @click="toggleFolders"
+    >
+      <v-icon>mdi-menu</v-icon>
+    </v-btn>
+
+    <v-spacer></v-spacer>
+    <v-toolbar-title>{{currKey}}</v-toolbar-title>
 
     <v-spacer></v-spacer>
     <MenuButton
@@ -28,12 +35,16 @@ export default {
   components: { MenuButton },
   data () {
     return {
-      action: StringConstants.STRING_EMPTY,
       menuAction: [
         {
           buttonName: StringConstants.ADD_NEW_FAVE,
           event: EventConstants.ADD_FAVE_EVENT,
           icon: 'mdi-heart',
+        },
+        {
+          buttonName: StringConstants.ADD_FOLDER,
+          event: EventConstants.ADD_FOLDER_EVENT,
+          icon: 'mdi-folder',
         },
         {
           buttonName: StringConstants.DEL_ALL,
@@ -43,16 +54,46 @@ export default {
       ],
     };
   },
-  created () {
-    this.$eventHub.$on('actionEvent', this.actionCalled);
-  },
   methods: {
-    actionCalled (action) {
-      this.action = action;
+    toggleFolders () {
+      this.$eventHub.$emit(EventConstants.TOGGLE_FOLDER_EVENT);
+    },
+  },
+  created () {
+  },
+  computed: {
+    currKey () {
+      return this.$store.getters.getCurrentKey;
     },
   },
 };
 </script>
 
 <style>
+.navbarColor {
+  /* background: rgb(244, 230, 236);
+  background: radial-gradient(
+    circle,
+    rgba(244, 230, 236, 1) 0%,
+    rgba(148, 187, 233, 1) 100%
+  ); */
+  /* background: rgb(244, 230, 236);
+  background: radial-gradient(
+    circle,
+    rgba(244, 230, 236, 0.4682247899159664) 0%,
+    rgba(148, 187, 233, 0.3449754901960784) 100%
+  ); */
+  /* background: rgb(244, 230, 236);
+  background: radial-gradient(
+    circle,
+    rgba(244, 230, 236, 0.1292892156862745) 0%,
+    rgba(148, 187, 233, 0.2049194677871149) 100%
+  ); */
+  background: rgb(244, 230, 236);
+  background: radial-gradient(
+    circle,
+    rgba(244, 230, 236, 0.04805672268907568) 0%,
+    rgba(148, 187, 233, 0.2049194677871149) 100%
+  );
+}
 </style>

@@ -1,11 +1,4 @@
-const DEL_ALL_EVENT = 'deleteAll';
-const ADD_FAVE_EVENT = 'addFave';
-const EDIT_FAVE_EVENT = 'editFave';
-const DEL_FAVE_EVENT = 'deleteFave';
-const OPEN_URL_EVENT = 'openUrl';
-const SORT_EVENT = 'sortEvent';
-const ADDED_EVENT = 'addedFave';
-const EDITED_EVENT = 'editedFave';
+/*  DOM Events  */
 const KEYUP_EVENT = 'keyup';
 const CLICK_EVENT = 'click';
 const MOUSEDOWN_EVENT = 'mousedown';
@@ -15,6 +8,18 @@ const TOUCHEND_EVENT = 'touchend';
 const TOUCHCANCEL_EVENT = 'touchcancel';
 const KEYBOARD_ESCAPE = 27;
 const KEYBOARD_ENTER = 13;
+
+/*  Custom Events  */
+const DEL_ALL_EVENT = 'deleteAll';
+const ADD_FAVE_EVENT = 'addFave';
+const EDIT_FAVE_EVENT = 'editFave';
+const DEL_FAVE_EVENT = 'deleteFave';
+const OPEN_URL_EVENT = 'openUrl';
+const SORT_EVENT = 'sortEvent';
+const ADDED_EVENT = 'addedFave';
+const EDITED_EVENT = 'editedFave';
+const TOGGLE_FOLDER_EVENT = 'toggleFolder';
+const ADD_FOLDER_EVENT = 'addFolder';
 
 export default {
   DEL_ALL_EVENT,
@@ -34,4 +39,6 @@ export default {
   MOUSEOUT_EVENT,
   TOUCHEND_EVENT,
   TOUCHCANCEL_EVENT,
+  TOGGLE_FOLDER_EVENT,
+  ADD_FOLDER_EVENT,
 };

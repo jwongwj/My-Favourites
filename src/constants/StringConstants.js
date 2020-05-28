@@ -1,45 +1,38 @@
-// VS Code Extension used - #region folding for VS Code (Ctrl M + R)
-
-/* #region  Common Strings */
+/* Common Strings */
 const STRING_EMPTY = '';
-/* #endregion */
 
-/* #region  Buttons */
+/* Buttons */
 const ADD_NEW_FAVE = 'Add New Favourites';
 const DEL_ALL = 'Delete All';
 const EDIT = 'Edit';
 const DELETE = 'Delete';
 const OPEN_URL = 'Open URL';
 const MOVE = 'Move';
-/* #endregion */
+const ADD_FOLDER = 'Add Folder';
 
-/* #region  URL Path */
+/* URL Path */
 const FAVEICON_PATH = 'https://s2.googleusercontent.com/s2/favicons?domain=';
-/* #endregion */
 
-/* #region  Web Related */
+/* Web Related */
 const WEB_WWW = 'www';
 const WEB_HTTPS = 'https';
 const WEB_HTTPS_PREFIX = 'https://';
-/* #endregion */
 
-/* #region  Validation Messages */
+/* Validation Messages */
 const BLANK_VALIDATION = (fieldName) => `${fieldName} must not be blank`;
-/* #endregion */
 
-/* #region  Global Keys */
+/* Global Keys */
 const STORAGE_ITEMS_KEY = 'faveItems';
-/* #endregion */
 
-/* #region  Notification Messages */
-const ADDED_MESSAGE = ' has been added to Favourites';
+/* Notification Messages */
+const ADDED_MESSAGE = ' has been added';
 const EDITED_MESSAGE = ' has been edited';
 const DELETED_SINGLE_MESSAGE = ' has been deleted';
 const DELETED_ALL_MESSAGE = ' have been deleted';
 const ITEM = 'item';
 const ITEMS = 'items';
-/* #endregion */
 
+/* Button Colors */
 const SUCCESS_ALERT = 'success';
 const WARNING_ALERT = 'warn';
 const DELETED_ALERT = 'error';
@@ -67,4 +60,5 @@ export default {
   DELETED_ALL_MESSAGE,
   ITEM,
   ITEMS,
+  ADD_FOLDER,
 };

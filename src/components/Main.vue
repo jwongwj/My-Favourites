@@ -2,9 +2,8 @@
   <v-sheet
     id="scrolling-techniques-7"
     max-height="90vh"
-    style="position: relative;"
   >
-    <v-container @contextmenu.prevent="">
+    <v-container>
       <template>
         <v-row justify="center">
           <v-dialog
@@ -82,13 +81,11 @@
           </v-dialog>
         </v-row>
       </template>
-      <v-row
-        style="padding-top: 4%;"
-        class="minClassSize"
-      >
+      <v-row class="minClassSize">
         <v-card
           tile
           class="mx-auto overflow-y-auto listClass"
+          elevation="5"
         >
           <v-toolbar
             flat
@@ -127,6 +124,10 @@
             ></v-text-field>
 
           </v-toolbar>
+          <!-- <Draggable
+            draggable=".dragItems"
+            group="dragItem"
+          > -->
           <v-list
             dense
             two-line
@@ -134,78 +135,87 @@
             avatar
             rounded
           >
-            <v-list-item-group>
-              <div
-                class="alignCenter"
-                v-if="checkItems()"
-              >
-                <span> No data available </span>
-              </div>
-              <div v-else>
-                <Draggable
-                  v-model="items"
-                  @end="onEnd"
-                  draggable=".dragItems"
+            <Draggable
+              v-model="items"
+              @end="onEnd"
+              draggable=".dragItems"
+              group="dragItem"
+            >
+              <v-list-item-group>
+                <div
+                  class="alignCenter dragItems"
+                  v-if="checkItems()"
                 >
-                  <v-list-item
-                    v-for="(itemList, i) in filteredList"
-                    :key="i"
-                    :class="{dragItems : true}"
-                    selectable
-                    v-longpress
-                    :ripple="false"
+                  <span> No data available </span>
+                </div>
+                <div v-else>
+                  <Draggable
+                    v-model="items"
+                    @end="onEnd"
+                    draggable=".dragItems"
+                    group="dragItem"
                   >
-                    <v-list-item-action
-                      v-if="multiSelect"
-                      @click="selectItem(itemList)"
-                    >
-                      <!-- Checkbox :checked is actually input-value -->
-                      <v-checkbox :input-value="itemList.checked"></v-checkbox>
-                    </v-list-item-action>
-                    <v-list-item-avatar
+                    <v-list-item
+                      v-for="(itemList, i) in filteredList"
+                      :key="i"
                       :class="{dragItems : true}"
-                      @click="setMultiSelect(itemList)"
+                      selectable
+                      :ripple="false"
                     >
-                      <v-img :src="getImage(itemList.url)"></v-img>
-                    </v-list-item-avatar>
+                      <v-list-item-action
+                        v-if="multiSelect"
+                        @click="selectItem(itemList)"
+                      >
+                        <!-- Checkbox :checked is actually input-value -->
+                        <v-checkbox :input-value="itemList.checked"></v-checkbox>
+                      </v-list-item-action>
+                      <v-list-item-avatar
+                        v-longpress
+                        :class="{dragItems : true}"
+                        @click="setMultiSelect(itemList)"
+                      >
+                        <v-img :src="getImage(itemList.url)"></v-img>
+                      </v-list-item-avatar>
 
-                    <v-list-item-content
-                      @click="navigateURL(itemList)"
-                      :class="{dragItems : true, leftMargin: sortable || multiSelect}"
-                    >
-                      <v-list-item-title v-html="itemList.name"></v-list-item-title>
-                      <v-list-item-subtitle v-html="itemList.description"></v-list-item-subtitle>
-                    </v-list-item-content>
+                      <v-list-item-content
+                        @click="navigateURL(itemList)"
+                        :class="{dragItems : false, leftMargin: sortable || multiSelect}"
+                      >
+                        <v-list-item-title v-html="itemList.name"></v-list-item-title>
+                        <v-list-item-subtitle v-html="itemList.description"></v-list-item-subtitle>
+                      </v-list-item-content>
 
-                    <v-list-item-action
-                      v-if="sortable"
-                      :class="{dragItems : false}"
-                    >
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on }">
-                          <v-icon v-on='on'> mdi-menu </v-icon>
-                        </template>
-                        <span>Sort Order</span>
-                      </v-tooltip>
+                      <v-list-item-action
+                        v-if="sortable"
+                        :class="{dragItems : false}"
+                      >
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on }">
+                            <v-icon v-on='on'> mdi-menu </v-icon>
+                          </template>
+                          <span>Sort Order</span>
+                        </v-tooltip>
 
-                    </v-list-item-action>
-                    <v-list-item-action
-                      v-else-if="!multiSelect"
-                      :class="{ dragItems : true}"
-                    >
-                      <MenuButton
-                        :menuAction="menuAction"
-                        :actionItem="itemList"
-                        :menuOption="menuOption"
-                        :eventBus="$eventHub"
-                      />
-                    </v-list-item-action>
+                      </v-list-item-action>
+                      <v-list-item-action
+                        v-else-if="!multiSelect"
+                        :class="{ dragItems : false}"
+                      >
+                        <MenuButton
+                          :menuAction="menuAction"
+                          :actionItem="itemList"
+                          :menuOption="menuOption"
+                          :eventBus="$eventHub"
+                        />
+                      </v-list-item-action>
 
-                  </v-list-item>
-                </Draggable>
-              </div>
-            </v-list-item-group>
+                    </v-list-item>
+                  </Draggable>
+                </div>
+              </v-list-item-group>
+            </Draggable>
           </v-list>
+          <!-- </Draggable> -->
         </v-card>
       </v-row>
     </v-container>
@@ -221,7 +231,7 @@ import Draggable from 'vuedraggable';
 import StringConstants from '@/constants/StringConstants';
 
 const { localStorage } = window;
-const storageKey = StringConstants.STORAGE_ITEMS_KEY;
+// const storageKey = this.$store.getters.getCurrentKey;
 
 export default {
   name: 'formDiv',
@@ -235,17 +245,19 @@ export default {
       alert: true,
       item: new ListModel(),
       items: [],
+      currentKey: StringConstants.STRING_EMPTY,
+      keys: [],
       menuAction: [
         {
           buttonName: StringConstants.EDIT,
           event: EventConstants.EDIT_FAVE_EVENT,
           icon: 'mdi-pencil',
         },
-        {
-          buttonName: StringConstants.MOVE,
-          event: EventConstants.SORT_EVENT,
-          icon: 'mdi-menu',
-        },
+        // {
+        //   buttonName: StringConstants.MOVE,
+        //   event: EventConstants.SORT_EVENT,
+        //   icon: 'mdi-menu',
+        // },
         {
           buttonName: StringConstants.DELETE,
           event: EventConstants.DEL_FAVE_EVENT,
@@ -280,9 +292,9 @@ export default {
     this.$eventHub.$on(EventConstants.ADD_FAVE_EVENT, this.addFave);
     this.$eventHub.$on(EventConstants.DEL_ALL_EVENT, this.delAll);
     this.$eventHub.$on(EventConstants.SORT_EVENT, this.setSortable);
+    this.$eventHub.$on('updateItems', this.setItem);
 
     const that = this;
-
     document.addEventListener(EventConstants.KEYUP_EVENT, (evt) => {
       if (evt.keyCode === EventConstants.KEYBOARD_ESCAPE) {
         that.close();
@@ -294,8 +306,11 @@ export default {
     });
     // End Register Events
 
-    if (localStorage.getItem(storageKey) !== null) {
-      this.items = JSON.parse(localStorage.getItem(storageKey));
+    // localStorage.clear();
+
+    if (localStorage.getItem(this.$store.state.currentKey) !== null) {
+      const items = JSON.parse(localStorage.getItem(this.$store.state.currentKey));
+      this.items = items.items;
     }
   },
   methods: {
@@ -341,7 +356,7 @@ export default {
       const { length } = this.items;
       if (length > 0) {
         const itemMsg = (length > 1) ? `${length} ${StringConstants.ITEMS}` : `${length} ${StringConstants.ITEM}`;
-        const delMsg = (length > 1) ? `${length} ${StringConstants.DELETED_ALL_MESSAGE}` : `${length} ${StringConstants.DELETED_SINGLE_MESSAGE}`;
+        const delMsg = (length > 1) ? `${StringConstants.DELETED_ALL_MESSAGE}` : `${StringConstants.DELETED_SINGLE_MESSAGE}`;
         localStorage.removeItem(StringConstants.STORAGE_ITEMS_KEY);
         this.items = [];
         this.getMainContext().showAlert(itemMsg, delMsg, StringConstants.DELETED_ALERT);
@@ -360,7 +375,7 @@ export default {
       const { length } = this.selectedItems;
       if (length > 0) {
         const message = (length > 1) ? `${length} ${StringConstants.ITEMS}` : `${length} ${StringConstants.ITEM}`;
-        const delMsg = (length > 1) ? `${length} ${StringConstants.DELETED_ALL_MESSAGE}` : `${length} ${StringConstants.DELETED_SINGLE_MESSAGE}`;
+        const delMsg = (length > 1) ? `${StringConstants.DELETED_ALL_MESSAGE}` : `${StringConstants.DELETED_SINGLE_MESSAGE}`;
         for (let i = 0; i < this.selectedItems.length; i++) {
           this.delFave(this.selectedItems[i]);
         }
@@ -419,7 +434,10 @@ export default {
       }
     },
     saveToLocalStorage () {
-      localStorage.setItem(storageKey, JSON.stringify(this.items));
+      const obj = {};
+      obj.folderName = this.$store.state.currentKey;
+      obj.items = this.items;
+      localStorage.setItem(this.$store.state.currentKey, JSON.stringify(obj));
     },
     selectItem (item) {
       const indexMainList = this.items.indexOf(item);
@@ -435,6 +453,14 @@ export default {
         this.selectedItems.push(item);
       }
       this.selectedCount = this.selectedItems.length;
+    },
+    setItem (key) {
+      if (localStorage.getItem(key) !== null) {
+        const items = JSON.parse(localStorage.getItem(key));
+        this.items = items.items;
+      } else {
+        this.items = [];
+      }
     },
     setMultiSelect (item) {
       if (!this.sortable) {
@@ -456,7 +482,7 @@ export default {
       this.selectedItems = [];
     },
     onEnd () {
-      this.saveToLocalStorage();
+      // this.saveToLocalStorage();
     },
     uncheckAllItems (selected) {
       for (let i = 0; i < selected.length; i++) {
