@@ -9,7 +9,7 @@
       color="transparent"
       @click="toggleFolders"
     >
-      <v-icon>mdi-menu</v-icon>
+      <v-icon>mdi-folder</v-icon>
     </v-btn>
 
     <v-spacer></v-spacer>
