@@ -23,6 +23,7 @@
     "no-param-reassign": "off",
     "no-return-assign": "off",
     "consistent-return": "off",
-    "operator-linebreak": "off"
+    "operator-linebreak": "off",
+    "linebreak-style": "off"
   }
 }
