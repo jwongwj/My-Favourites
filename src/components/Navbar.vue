@@ -40,16 +40,19 @@ export default {
           buttonName: StringConstants.ADD_NEW_FAVE,
           event: EventConstants.ADD_FAVE_EVENT,
           icon: 'mdi-heart',
+          iconColor: 'pink lighten-2',
         },
-        {
-          buttonName: StringConstants.ADD_FOLDER,
-          event: EventConstants.ADD_FOLDER_EVENT,
-          icon: 'mdi-folder',
-        },
+        // {
+        //   buttonName: StringConstants.ADD_FOLDER,
+        //   event: EventConstants.ADD_FOLDER_EVENT,
+        //   icon: 'mdi-folder',
+        //   iconColor: 'yellow accent-4',
+        // },
         {
           buttonName: StringConstants.DEL_ALL,
           event: EventConstants.DEL_ALL_EVENT,
           icon: 'mdi-delete-variant',
+          iconColor: 'red lighten-3',
         },
       ],
     };

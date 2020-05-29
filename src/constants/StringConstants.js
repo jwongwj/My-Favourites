@@ -1,14 +1,17 @@
 /* Common Strings */
 const STRING_EMPTY = '';
 
-/* Buttons */
+/* Buttons & Titles */
 const ADD_NEW_FAVE = 'Add New Favourites';
 const DEL_ALL = 'Delete All';
 const EDIT = 'Edit';
 const DELETE = 'Delete';
 const OPEN_URL = 'Open URL';
 const MOVE = 'Move';
+const RENAME = 'Rename';
 const ADD_FOLDER = 'Add Folder';
+const FAVOURITES = 'Favourites';
+const RENAME_FOLDER = 'Rename Folder';
 
 /* URL Path */
 const FAVEICON_PATH = 'https://s2.googleusercontent.com/s2/favicons?domain=';
@@ -23,6 +26,7 @@ const BLANK_VALIDATION = (fieldName) => `${fieldName} must not be blank`;
 
 /* Global Keys */
 const STORAGE_ITEMS_KEY = 'faveItems';
+const STORAGE_FOLDER_KEYS = 'keysForFolders';
 
 /* Notification Messages */
 const ADDED_MESSAGE = ' has been added';
@@ -31,6 +35,11 @@ const DELETED_SINGLE_MESSAGE = ' has been deleted';
 const DELETED_ALL_MESSAGE = ' have been deleted';
 const ITEM = 'item';
 const ITEMS = 'items';
+const FOLDER_EXIST_MESSAGE = ' folder already exist';
+const FOLDER_EDIT_MESSAGE = ' folder has been edited';
+const FOLDER_ADDED_MESSAGE = ' folder has been added';
+const FOLDER_DEL_MESSAGE = ' folder has been deleted';
+const FOLDER_LAST_MESSAGE = 'At least one folder needs to remain';
 
 /* Button Colors */
 const SUCCESS_ALERT = 'success';
@@ -61,4 +70,13 @@ export default {
   ITEM,
   ITEMS,
   ADD_FOLDER,
+  RENAME,
+  STORAGE_FOLDER_KEYS,
+  FAVOURITES,
+  RENAME_FOLDER,
+  FOLDER_EXIST_MESSAGE,
+  FOLDER_EDIT_MESSAGE,
+  FOLDER_ADDED_MESSAGE,
+  FOLDER_DEL_MESSAGE,
+  FOLDER_LAST_MESSAGE,
 };

@@ -20,6 +20,11 @@ const ADDED_EVENT = 'addedFave';
 const EDITED_EVENT = 'editedFave';
 const TOGGLE_FOLDER_EVENT = 'toggleFolder';
 const ADD_FOLDER_EVENT = 'addFolder';
+const RENAME_FOLDER_EVENT = 'renameFolder';
+const DEL_FOLDER_EVENT = 'deleteFolder';
+const SHOW_ALERT_EVENT = 'showAlert';
+const UPDATE_ITEMS_EVENT = 'updateItems';
+const DRAG_END_EVENT = 'dragEnd';
 
 export default {
   DEL_ALL_EVENT,
@@ -41,4 +46,9 @@ export default {
   TOUCHCANCEL_EVENT,
   TOGGLE_FOLDER_EVENT,
   ADD_FOLDER_EVENT,
+  RENAME_FOLDER_EVENT,
+  DEL_FOLDER_EVENT,
+  SHOW_ALERT_EVENT,
+  UPDATE_ITEMS_EVENT,
+  DRAG_END_EVENT,
 };

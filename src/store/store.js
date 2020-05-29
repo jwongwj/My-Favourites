@@ -12,15 +12,17 @@ export default new Vuex.Store({
     storeItems: [],
     storeItem: new ListModel(),
     currentKey: StringConstants.STRING_EMPTY,
+    dragging: false,
+    draggedItem: {},
   },
   getters: {
     // eslint-disable-next-line no-unused-vars
     getCurrentKey: (state) => {
       const { localStorage } = window;
-      const folder = JSON.parse(localStorage.getItem('keysForFolders'));
+      const folder = JSON.parse(localStorage.getItem(StringConstants.STORAGE_FOLDER_KEYS));
       if (folder != null) {
         const fold = folder.filter((arr) => arr.folderKey === state.currentKey);
-        if (fold != null) {
+        if (fold != null && fold[0] != null) {
           return fold[0].folderName;
         }
       }

@@ -153,7 +153,7 @@
                     v-model="items"
                     @end="onEnd"
                     draggable=".dragItems"
-                    group="dragItem"
+                    group="{group:{ put:'dragItem', name: 'dragItem'}}"
                   >
                     <v-list-item
                       v-for="(itemList, i) in filteredList"
@@ -161,6 +161,8 @@
                       :class="{dragItems : true}"
                       selectable
                       :ripple="false"
+                      @drag="onStart(itemList)"
+                      @dragend="onDragEnd(itemList)"
                     >
                       <v-list-item-action
                         v-if="multiSelect"
@@ -252,6 +254,7 @@ export default {
           buttonName: StringConstants.EDIT,
           event: EventConstants.EDIT_FAVE_EVENT,
           icon: 'mdi-pencil',
+          iconColor: 'green lighten-2',
         },
         // {
         //   buttonName: StringConstants.MOVE,
@@ -261,7 +264,8 @@ export default {
         {
           buttonName: StringConstants.DELETE,
           event: EventConstants.DEL_FAVE_EVENT,
-          icon: 'mdi-delete-variant',
+          icon: 'mdi-delete',
+          iconColor: 'red lighten-3',
         },
       ],
       oldItem: new ListModel(),
@@ -292,7 +296,8 @@ export default {
     this.$eventHub.$on(EventConstants.ADD_FAVE_EVENT, this.addFave);
     this.$eventHub.$on(EventConstants.DEL_ALL_EVENT, this.delAll);
     this.$eventHub.$on(EventConstants.SORT_EVENT, this.setSortable);
-    this.$eventHub.$on('updateItems', this.setItem);
+    this.$eventHub.$on(EventConstants.UPDATE_ITEMS_EVENT, this.setItem);
+    this.$eventHub.$on(EventConstants.DRAG_END_EVENT, this.emitFolder);
 
     const that = this;
     document.addEventListener(EventConstants.KEYUP_EVENT, (evt) => {
@@ -309,11 +314,39 @@ export default {
     // localStorage.clear();
 
     if (localStorage.getItem(this.$store.state.currentKey) !== null) {
-      const items = JSON.parse(localStorage.getItem(this.$store.state.currentKey));
-      this.items = items.items;
+      const itemFromStorage = localStorage.getItem(this.$store.state.currentKey);
+      if (itemFromStorage !== StringConstants.STRING_EMPTY) {
+        const items = JSON.parse(itemFromStorage);
+        this.items = items.items;
+      }
     }
   },
   methods: {
+    onStart () {
+      this.$store.state.dragging = true;
+    },
+    onDragEnd (item) {
+      this.$store.state.draggedItem = item;
+    },
+    emitFolder (key) {
+      if (key !== this.$store.state.currentKey) {
+        this.items.splice(this.items.indexOf(this.$store.state.draggedItem), 1);
+        this.saveToLocalStorage();
+        let items = {};
+        const itemFromStage = localStorage.getItem(key);
+        if (itemFromStage === StringConstants.STRING_EMPTY) {
+          items.items = [];
+          items.items.push(this.$store.state.draggedItem);
+          items.folderKey = key;
+        } else {
+          items = JSON.parse(localStorage.getItem(key));
+          items.items.push(this.$store.state.draggedItem);
+        }
+        localStorage.setItem(key, JSON.stringify(items));
+      }
+      this.$store.state.draggedItem = {};
+      this.$store.state.dragging = false;
+    },
     addFave () {
       this.showDialog = true;
       this.onEdit = false;
@@ -359,7 +392,7 @@ export default {
         const delMsg = (length > 1) ? `${StringConstants.DELETED_ALL_MESSAGE}` : `${StringConstants.DELETED_SINGLE_MESSAGE}`;
         localStorage.removeItem(this.$store.state.currentKey);
         this.items = [];
-        this.getMainContext().showAlert(itemMsg, delMsg, StringConstants.DELETED_ALERT);
+        this.$eventHub.$emit(EventConstants.SHOW_ALERT_EVENT, itemMsg, delMsg, StringConstants.DELETED_ALERT);
       }
     },
     delFave (item) {
@@ -368,7 +401,7 @@ export default {
         const { name } = this.items[index];
         this.items.splice(index, 1);
         this.saveToLocalStorage();
-        this.getMainContext().showAlert(name, StringConstants.DELETED_SINGLE_MESSAGE, StringConstants.DELETED_ALERT);
+        this.$eventHub.$emit(EventConstants.SHOW_ALERT_EVENT, name, StringConstants.DELETED_SINGLE_MESSAGE, StringConstants.DELETED_ALERT);
       }
     },
     deleteSelected () {
@@ -379,8 +412,7 @@ export default {
         for (let i = 0; i < this.selectedItems.length; i++) {
           this.delFave(this.selectedItems[i]);
         }
-        debugger;
-        this.getMainContext().showAlert(message, delMsg, StringConstants.DELETED_ALERT);
+        this.$eventHub.$emit(EventConstants.SHOW_ALERT_EVENT, message, delMsg, StringConstants.DELETED_ALERT);
         this.toggleMultiselect();
       }
     },
@@ -396,9 +428,6 @@ export default {
       }
 
       return `${StringConstants.FAVEICON_PATH}${url}`;
-    },
-    getMainContext () {
-      return this.$parent.$parent;
     },
     navigateURL (item) {
       if (this.navigate) {
@@ -427,7 +456,7 @@ export default {
           this.saveToLocalStorage();
           this.close();
 
-          this.getMainContext().showAlert(name, action, StringConstants.SUCCESS_ALERT);
+          this.$eventHub.$emit(EventConstants.SHOW_ALERT_EVENT, name, action, StringConstants.SUCCESS_ALERT);
         } else {
           this.$refs.listForm.validate(false, this.item.url);
         }
@@ -455,7 +484,8 @@ export default {
       this.selectedCount = this.selectedItems.length;
     },
     setItem (key) {
-      if (localStorage.getItem(key) !== null) {
+      const itemFromStorage = localStorage.getItem(key);
+      if (itemFromStorage !== null && itemFromStorage !== StringConstants.STRING_EMPTY) {
         const items = JSON.parse(localStorage.getItem(key));
         this.items = items.items;
       } else {
